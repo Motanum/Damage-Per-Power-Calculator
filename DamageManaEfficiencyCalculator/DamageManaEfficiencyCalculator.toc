@@ -4,6 +4,11 @@
 ## Version: 0.0.1
 ## SavedVariables: MUI_Buffs
 
+# If you are reading this, please check out my games on Steam!
+# Flynguin Station - https://store.steampowered.com/app/969250/
+# Aperture Tag - https://store.steampowered.com/app/280740/
+
+
 #main
 #main.lua
 config.lua

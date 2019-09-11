@@ -101,7 +101,7 @@ local PowerCost
 local DamagePerPowerCost
 local DamagePerSecond
 local DPSPerPower
-local InSpellID
+--local InSpellID
 local TitleString = "Empty";
 local ResultString = "Empty";
 local DPSResult = "Empty"
@@ -119,7 +119,51 @@ StaticPopupDialogs["EXAMPLE_HELLOWORLD"] = {
   timeout = 0,
   whileDead = true,
   hideOnEscape = true,
+  --sound = "LOOTWINDOWOPENEMPTY",
 }
+
+--Override StaticPopup_OnShow()
+function StaticPopup_OnShow(self)
+	--PlaySound(SOUNDKIT.IG_MAINMENU_OPEN);
+	PlaySound(SOUNDKIT.IG_CHAT_SCROLL_UP);
+
+	local dialog = StaticPopupDialogs[self.which];
+	local OnShow = dialog.OnShow;
+
+	if ( OnShow ) then
+		OnShow(self, self.data);
+	end
+	if ( dialog.hasMoneyInputFrame ) then
+		_G[self:GetName().."MoneyInputFrameGold"]:SetFocus();
+	end
+	if ( dialog.enterClicksFirstButton ) then
+		self:SetScript("OnKeyDown", StaticPopup_OnKeyDown);
+	end
+end
+
+--Override StaticPopup_OnHide()
+function StaticPopup_OnHide(self)
+	--PlaySound(SOUNDKIT.IG_MAINMENU_CLOSE);
+
+	StaticPopup_CollapseTable();
+
+	local dialog = StaticPopupDialogs[self.which];
+	local OnHide = dialog.OnHide;
+	if ( OnHide ) then
+		OnHide(self, self.data);
+	end
+	self.extraFrame:Hide();
+	if ( dialog.enterClicksFirstButton ) then
+		self:SetScript("OnKeyDown", nil);
+	end
+	if ( self.insertedFrame ) then
+		self.insertedFrame:Hide();
+		self.insertedFrame:SetParent(nil);
+		local text = _G[self:GetName().."Text"];
+		_G[self:GetName().."MoneyFrame"]:SetPoint("TOP", text, "BOTTOM", 0, -5);
+		_G[self:GetName().."MoneyInputFrame"]:SetPoint("TOP", text, "BOTTOM", 0, -5);
+	end
+end
 
 print("Create function core:mainDamagePerPowerCalc()")
 
@@ -185,27 +229,17 @@ GameTooltip:HookScript("OnTooltipSetSpell", function(self)
 	isValidSpell = true;
 	
 	local name, NewSpellID = self:GetSpell()
-	if ((NewSpellID == InSpellID)) then return else
-		-- Work with the spell ID you now have access to
-		InSpellID = NewSpellID
-		core.myFunction(self, InSpellID)
-		if (isValidSpell == false) then return end --Quit execute if not valid spell
+	core.myFunction(self, NewSpellID)
+	
+	if (isValidSpell == false) then return end --Quit execute if not valid spell
+	
+	local finalResultString = (TitleString .. "\n" .. ResultString .. "\n" .. DPSResult .. "\n" .. DPSPPResult)
+	
+	--StaticPopup_Show ("EXAMPLE_HELLOWORLD", TitleString, ResultString, DPSResult, DPSPPResult)
+	StaticPopup_Show ("EXAMPLE_HELLOWORLD", finalResultString)
+	--StaticPopupDialogs
 		
-		local finalResultString = (TitleString .. "\n" .. ResultString .. "\n" .. DPSResult .. "\n" .. DPSPPResult)
-		
-		--StaticPopup_Show ("EXAMPLE_HELLOWORLD", TitleString, ResultString, DPSResult, DPSPPResult)
-		StaticPopup_Show ("EXAMPLE_HELLOWORLD", finalResultString)
-		--StaticPopupDialogs
-		
-		--[[
-		print(TitleString)
-		print(ResultString)
-		print(DPSResult)
-		print(DPSPPResult)
-		]]
-		
-		--Config.Activate()
-	end
+	--Config.Activate()
 end)
 
 
