@@ -90,8 +90,6 @@ function core:init(event, name)
     core:Print("Welcome back", UnitName("player").."!");
 end
 
-
-
 print("Create Local Variables")
 
 local isValidSpell
@@ -104,9 +102,24 @@ local DamagePerPowerCost
 local DamagePerSecond
 local DPSPerPower
 local InSpellID
+local TitleString = "Empty";
 local ResultString = "Empty";
 local DPSResult = "Empty"
 local DPSPPResult = "Empty";
+
+--crate a static pop up frame
+StaticPopupDialogs["EXAMPLE_HELLOWORLD"] = {
+  --text = "%s \n %s \n %s \n %s \n",
+  text = "%s",
+  button1 = "Neat!",
+  button2 = "OK",
+  --OnAccept = function()
+  --    GreetTheWorld()
+  --end,
+  timeout = 0,
+  whileDead = true,
+  hideOnEscape = true,
+}
 
 print("Create function core:mainDamagePerPowerCalc()")
 
@@ -155,7 +168,7 @@ function core:myFunction(InSpellID)
 	DamagePerSecond = (DamageLow + DamageHigh) / (2 * castTime);
 	DPSPerPower = ((DamageLow + DamageHigh) / (2 * castTime) ) / PowerCost;
 	
-	print(SpellName .. " stats");
+	TitleString = (SpellName .. " stats");
 	ResultString = (DamagePerPowerCost .. " Dmg/Power");
 	DPSResult = (DamagePerSecond .. " DPS");
 	DPSPPResult = (DPSPerPower .. " DPS Per Power");
@@ -177,11 +190,20 @@ GameTooltip:HookScript("OnTooltipSetSpell", function(self)
 		InSpellID = NewSpellID
 		core.myFunction(self, InSpellID)
 		if (isValidSpell == false) then return end --Quit execute if not valid spell
-
+		
+		local finalResultString = (TitleString .. "\n" .. ResultString .. "\n" .. DPSResult .. "\n" .. DPSPPResult)
+		
+		--StaticPopup_Show ("EXAMPLE_HELLOWORLD", TitleString, ResultString, DPSResult, DPSPPResult)
+		StaticPopup_Show ("EXAMPLE_HELLOWORLD", finalResultString)
+		--StaticPopupDialogs
+		
+		--[[
+		print(TitleString)
 		print(ResultString)
 		print(DPSResult)
 		print(DPSPPResult)
-	
+		]]
+		
 		--Config.Activate()
 	end
 end)
@@ -190,7 +212,7 @@ end)
 GameTooltip:HookScript("OnTooltipCleared", function(self)
 	--print("OnTooltipCleared called")
 	--Config.Deactivate()
-
+	StaticPopup_Hide ("EXAMPLE_HELLOWORLD")
 end)
 
 
