@@ -1,0 +1,11 @@
+## Interface: 11302
+## Title: Damage Mana Efficiency Calculator
+## Author: Eugenio 'Motanum' Roman
+## Version: 0.0.1
+## SavedVariables: MUI_Buffs
+
+#main
+#main.lua
+config.lua
+timer.lua
+init.lua
