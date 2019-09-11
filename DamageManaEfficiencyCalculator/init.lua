@@ -94,6 +94,7 @@ end
 
 print("Create Local Variables")
 
+local isValidSpell
 local isClear
 local SpellDescription
 local DamageLow
@@ -112,6 +113,7 @@ print("Create function core:mainDamagePerPowerCalc()")
 function core:myFunction(InSpellID)
 	--print("myFuncion Called. SpellID: " .. InSpellID)
 	--Do Damage Per Power Stuff
+	
 	local PowerCostTable = GetSpellPowerCost(InSpellID);
 	local cleanPowerCostTable = PowerCostTable[1];
 
@@ -121,6 +123,30 @@ function core:myFunction(InSpellID)
 	DamageLow = SpellDescription:match("(%d+)");
 	DamageHigh = SpellDescription:match(".-%d+.-([%d%.%,]+)");
 	PowerCost = cleanPowerCostTable["cost"];
+	
+	
+	--check validity of gets
+	if (DamageLow == nil) then
+		--print("Damage Low is Nil") 
+		isValidSpell = false;
+		return 
+	end
+	if (DamageHigh == nil) then
+		--print("Damage Low is Nil") 
+		isValidSpell = false;
+		return 
+	end
+	--Check for strings
+	if (tonumber(DamageLow) == nil) then
+		--print("Damage Low is Nil") 
+		isValidSpell = false;
+		return 
+	end
+	if (tonumber(DamageHigh) == nil) then
+		--print("Damage Low is Nil") 
+		isValidSpell = false;
+		return 
+	end
 	
 	--change cast time from ms to s
 	castTime = castTime / 1000.0 
@@ -143,11 +169,15 @@ print("Running script from wowinterface.com")
 GameTooltip:HookScript("OnTooltipSetSpell", function(self)
 	--print("OnTooltipSetSpell called")
 	isClear = false;
+	isValidSpell = true;
+	
 	local name, NewSpellID = self:GetSpell()
 	if ((NewSpellID == InSpellID)) then return else
 		-- Work with the spell ID you now have access to
 		InSpellID = NewSpellID
 		core.myFunction(self, InSpellID)
+		if (isValidSpell == false) then return end --Quit execute if not valid spell
+
 		print(ResultString)
 		print(DPSResult)
 		print(DPSPPResult)
