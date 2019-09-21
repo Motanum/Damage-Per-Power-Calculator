@@ -97,6 +97,7 @@ local isClear
 local SpellDescription
 local DamageLow
 local DamageHigh
+local AvgDamage
 local PowerCost
 local DamagePerPowerCost
 local DamagePerSecond
@@ -172,6 +173,11 @@ function core:myFunction(InSpellID)
 	--Do Damage Per Power Stuff
 	
 	local PowerCostTable = GetSpellPowerCost(InSpellID);
+	if (PowerCostTable[1] == nil) then 
+		isValidSpell = false
+		return 
+	end
+	
 	local cleanPowerCostTable = PowerCostTable[1];
 
 	local SpellName, rank, icon, castTime, minRange, maxRange = GetSpellInfo(InSpellID)
@@ -198,19 +204,49 @@ function core:myFunction(InSpellID)
 		--print("Damage Low is Nil") 
 		isValidSpell = false;
 		return 
+	else
+		DamageLow = tonumber(DamageLow)
 	end
 	if (tonumber(DamageHigh) == nil) then
 		--print("Damage Low is Nil") 
 		isValidSpell = false;
 		return 
+	else
+		DamageHigh = tonumber(DamageHigh)
 	end
 	
 	--change cast time from ms to s
 	castTime = castTime / 1000.0 
+
+	if ((DamageHigh < (DamageLow * 0.5)) or (DamageHigh > (DamageLow * 1.5))) then
+		AvgDamage = DamageLow
+	else
+		AvgDamage = (DamageLow + DamageHigh) / 2
+	end
 	
-	DamagePerPowerCost = (DamageLow + DamageHigh) / (2 * PowerCost);
-	DamagePerSecond = (DamageLow + DamageHigh) / (2 * castTime);
-	DPSPerPower = ((DamageLow + DamageHigh) / (2 * castTime) ) / PowerCost;
+	local SpellStart, SpellDuration, SpellEnabled = GetSpellCooldown(InSpellID);
+	--print("SpellStart: " .. SpellStart .. ".SpellDuration: " .. SpellDuration .. ". SpellEnabled: " .. SpellEnabled);
+	
+	local SpellActiveCooldown = (SpellStart + SpellDuration - GetTime())
+	if (castTime == 0) then
+		if (SpellActiveCooldown > 1.5) then
+			castTime = SpellActiveCooldown
+		else
+			castTime = 1.5
+		end
+	end
+	
+	print("castTime: " .. castTime)
+	
+	DamagePerPowerCost = AvgDamage / PowerCost;
+	DamagePerSecond = AvgDamage / castTime;
+	DPSPerPower = DamagePerSecond / PowerCost;
+	
+	--Do 3 sig figures
+	--https://stackoverflow.com/questions/39264135/lua-significant-figures
+	DamagePerPowerCost = ("%.3g"):format(DamagePerPowerCost)
+	DamagePerSecond = ("%.3g"):format(DamagePerSecond)
+	DPSPerPower = ("%.3g"):format(DPSPerPower)
 	
 	TitleString = (SpellName .. " stats");
 	ResultString = (DamagePerPowerCost .. " Dmg/Power");
